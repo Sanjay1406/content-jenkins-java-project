@@ -35,7 +35,7 @@ pipeline{
           label 'apache'
         }
         steps{
-          sh "mkdir -p /var/www/html/rectangles/all/${env.BRANCH_NAME}"
+          sh "if ![ -d '/var/www/html/rectangles/all/${env.BRANCH_NAME}' ]; then mkdir /var/www/html/rectangles/all/${env.BRANCH_NAME}; fi"
           sh "cp dist/rectangle_${env.MAJOR_VERSION}.${env.BUILD_NUMBER}.jar /var/www/html/rectangles/all/${env.BRANCH_NAME}/"
         }
       }
@@ -48,7 +48,7 @@ pipeline{
           branch 'master'
         }
         steps{
-          sh "cp /var/www/html/rectangles/all/rectangle_${env.MAJOR_VERSION}.${env.BUILD_NUMBER}.jar /var/www/html/rectangles/green/rectangle_${env.MAJOR_VERSION}.${env.BUILD_NUMBER}.jar"
+          sh "cp /var/www/html/rectangles/all/${env.BRANCH_NAME}/rectangle_${env.MAJOR_VERSION}.${env.BUILD_NUMBER}.jar /var/www/html/rectangles/green/rectangle_${env.MAJOR_VERSION}.${env.BUILD_NUMBER}.jar"
         }
       }
 
@@ -65,6 +65,8 @@ pipeline{
             sh 'git stash'
             echo "Checkout dev"
             sh 'git checkout development'
+            echo 'pulling'
+            sh 'git pull'
             echo "checkout master"
             sh 'git checkout master'
             echo "Merge dev to master"
@@ -75,6 +77,29 @@ pipeline{
             sh "git tag rectangle-${env.MAJOR_VERSION}.${env.BUILD_NUMBER}"
             sh "git push origin rectangle-${env.MAJOR_VERSION}.${env.BUILD_NUMBER}"
         }
+
+        post{
+          success{
+            emailext(
+            subject: "${env.JOB_NAME} [${env.BUILD_NUMBER}] Development Promoted to Master",
+            body: """<p>'${env.JOB_NAME} [${env.BUILD_NUMBER}]' Development Promoted to Master":</p>
+            <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>""",
+            to: "sanjaywadhwani1406@gmail.com"
+          )
+      }
+    }
+      }
+    }
+
+        post{
+      failure {
+        emailext(
+          subject: "${env.JOB_NAME} [${env.BUILD_NUMBER}] Failed!",
+          body: """<p>'${env.JOB_NAME} [${env.BUILD_NUMBER}]' Failed!":</p>
+        <p>Check console output at &QUOT;<a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>&QUOT;</p>""",
+         to: "sanjaywadhwani1406@gmail.com"
+        )
+        
       }
     }
 }
