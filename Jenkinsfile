@@ -19,7 +19,13 @@ pipeline{
         steps{
           sh 'ant -f build.xml -v'
         }
+        post{
+          success{ 
+              archiveArtifacts artifacts: 'dist/*jar', fingerprint: true
+              }
+          }
       }
+
       stage('deploy'){
         agent {
           label 'apache'
@@ -39,10 +45,6 @@ pipeline{
       }
     }
 
-post{
-  always{ 
-    archiveArtifacts artifacts: 'dist/*jar', fingerprint: true
-  }
-}
+
 
 }
