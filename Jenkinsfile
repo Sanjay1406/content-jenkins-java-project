@@ -34,17 +34,14 @@ pipeline{
           sh "cp dist/rectangle_${env.BUILD_NUMBER}.jar /var/www/html/rectangles/all/"
         }
       }
-      stage('Running on CentOS'){
+
+      stage('Promote to green'){
         agent {
           label 'apache'
         }
         steps{
-          sh "wget http://samcricketersmailbox1c.mylabserver.com/rectanles/all/rectangle_${env.BUILD_NUMBER}.jar"
-          sh "java -jar rectangle_${env.BUILD_NUMBER}.jar 5 6"
+          sh "cp /var/www/html/rectangles/all/rectangle_${env.BUILD_NUMBER}.jar /var/www/html/rectangles/green/rectangle_${env.BUILD_NUMBER}.jar"
         }
       }
     }
-
-
-
 }
